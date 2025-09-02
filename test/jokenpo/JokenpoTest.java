@@ -2,48 +2,67 @@ package jokenpo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
-@DisplayName("Classe para teste do Jokenpo")
+@DisplayName("Testes unitários da classe Jokenpo")
 public class JokenpoTest {
 
     private Jokenpo jogo;
 
     @BeforeEach
-    public void inicializa() {
+    void setup() {
         jogo = new Jokenpo();
     }
 
-    @DisplayName("Testa se jogador ganha")
-    @Test
-    public void testJogador1Ganha() {
-        assertEquals(1, jogo.jogar(1, 2));
-        assertEquals(1, jogo.jogar(2, 3));
-        assertEquals(1, jogo.jogar(3, 1));
+    @DisplayName("Jogador 1 vence")
+    @ParameterizedTest(name = "jogador1={0}, jogador2={1} deve retornar 1")
+    @CsvSource({
+        "1,2", // papel > pedra
+        "2,3", // pedra > tesoura
+        "3,1"  // tesoura > papel
+    })
+    void testJogador1Ganha(int jogador1, int jogador2) {
+        assertEquals(1, jogo.jogar(jogador1, jogador2),
+                () -> "Esperava que jogador 1 ganhasse com " + jogador1 + " vs " + jogador2);
     }
 
- 
-
-    @DisplayName("Testa empates")
-    @Test
-    public void testEmpate() {
-        assertEquals(0, jogo.jogar(1, 1));
-        assertEquals(0, jogo.jogar(2, 2));
-        assertEquals(0, jogo.jogar(3, 3));
+    @DisplayName("Jogador 2 vence")
+    @ParameterizedTest(name = "jogador1={0}, jogador2={1} deve retornar 2")
+    @CsvSource({
+        "2,1", // pedra < papel
+        "3,2", // tesoura < pedra
+        "1,3"  // papel < tesoura
+    })
+    void testJogador2Ganha(int jogador1, int jogador2) {
+        assertEquals(2, jogo.jogar(jogador1, jogador2),
+                () -> "Esperava que jogador 2 ganhasse com " + jogador1 + " vs " + jogador2);
     }
 
-    @DisplayName("Testa opções inválidas")
-    @Test
-    public void testInvalido() {
-        assertEquals(-1, jogo.jogar(0, 2));
-        assertEquals(-1, jogo.jogar(4, 1));
-        assertEquals(-1, jogo.jogar(2, 10));
+    @DisplayName("Empates")
+    @ParameterizedTest(name = "jogador1={0}, jogador2={0} deve retornar 0")
+    @CsvSource({ "1", "2", "3" })
+    void testEmpates(int escolha) {
+        assertEquals(0, jogo.jogar(escolha, escolha),
+                () -> "Esperava empate quando ambos escolhem " + escolha);
     }
 
-   
+    @DisplayName("Entradas inválidas")
+    @ParameterizedTest(name = "jogador1={0}, jogador2={1} deve retornar -1")
+    @CsvSource({
+        "0,1",
+        "1,0",
+        "4,2",
+        "2,4",
+        "-1,3",
+        "3,-5"
+    })
+    void testEntradasInvalidas(int jogador1, int jogador2) {
+        assertEquals(-1, jogo.jogar(jogador1, jogador2),
+                () -> "Esperava -1 para entradas inválidas: " + jogador1 + " vs " + jogador2);
+    }
 }
